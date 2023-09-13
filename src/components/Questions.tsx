@@ -29,7 +29,8 @@ const Questions = () => {
       }
 
       if (question.type === "trueFalse" || question.type === "singlecorrect_answers") {
-        const isCorrect = userAnswer.userAnswer[0] === question.correct_answers;
+        // اگر نوع سوال trueFalse یا singlecorrect_answers باشد
+        const isCorrect = userAnswer.userAnswer[0] === question.correct_answers && userAnswer.userAnswer.length === 1;
         return {
           id: question.id,
           question: question.question,
@@ -90,7 +91,7 @@ const Questions = () => {
       return [...prevUserAnswers];
     });
   };
-
+console.log(userAnswers)
   return (
     <div className="flex flex-col gap-8">
       <div className="flex bg-BLUE700/90 py-4 px-12 justify-between shadow-lg shadow-BACKGROUND_DARK font-Viga md:text-2xl fixed w-full right-0 rounded-b-full">
