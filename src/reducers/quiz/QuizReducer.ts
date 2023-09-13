@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   IQuestions,
-  ISelectedAnswers,
 } from "../../interface/interfaceQuiz";
 import { getAllQuestions } from "../../services";
 import { RootState } from "../../store";
@@ -12,7 +11,9 @@ interface IQuiz {
   error: string | null;
   fullName: string;
   email: string;
-  selectedAnswers: ISelectedAnswers[];
+  selectedAnswers: {
+    [key: number]: string[];
+  };
 }
 
 export const fetchQuiz = createAsyncThunk("/quiz/fetchQuiz", async () => {

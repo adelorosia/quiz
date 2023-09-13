@@ -1,26 +1,24 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   selectAllQuestions,
-  setSelectedAnswers,
 } from "../reducers/quiz/QuizReducer";
 import AlertDelete from "./AlertDelete";
 import UsersInfo from "./UsersInfo";
-import { RootState } from "../store";
+import { useState } from "react";
 
 const Questions = () => {
-  const dispatch = useDispatch();
   const questions = useSelector(selectAllQuestions);
-  const userAnswers = useSelector(
-    (state: RootState) => state.questions.selectedAnswers
-  );
 
+  const [userAnswers, setUserAnswers] = useState<{ id: number; userAnswer: string[] }[]>([]);
 
+  const getType = (answer: string) => {
+    return answer === "trueFalse" ? "radio" : "checkbox";
+  };
 
   const calculateResults = () => {
-    // محاسبه نتایج
     const results = questions.map((question) => {
       const userAnswer = userAnswers.find((answer) => answer.id === question.id);
-  
+
       if (!userAnswer) {
         return {
           id: question.id,
@@ -29,9 +27,8 @@ const Questions = () => {
           isCorrect: false,
         };
       }
-  
+
       if (question.type === "trueFalse" || question.type === "singlecorrect_answers") {
-        // اگر نوع سوال trueFalse یا singlecorrect_answers باشد
         const isCorrect = userAnswer.userAnswer[0] === question.correct_answers;
         return {
           id: question.id,
@@ -40,12 +37,12 @@ const Questions = () => {
           isCorrect,
         };
       } else if (question.type === "multiplecorrect_answers") {
-        // اگر نوع سوال multiplecorrect_answers باشد
         const correctAnswers = question.correct_answers.split(",");
-        const userSelectedAnswers = [...new Set(userAnswer.userAnswer)].sort(); // حذف تکرارها
-        const isCorrect = correctAnswers.every((correctAnswer) =>
-          userSelectedAnswers.includes(correctAnswer)
-        );
+        const userSelectedAnswers = [...new Set(userAnswer.userAnswer)].sort();
+        const isCorrect =
+          correctAnswers.length === userSelectedAnswers.length &&
+          correctAnswers.every((correctAnswer) => userSelectedAnswers.includes(correctAnswer));
+
         return {
           id: question.id,
           question: question.question,
@@ -53,46 +50,43 @@ const Questions = () => {
           isCorrect,
         };
       }
-    });
-  
-    // نمایش نتایج در کنسول به صورت جدول
+      return null; // اضافه کردن این خط به عنوان بخشی از بهبود کد
+    }).filter(result => result !== null); // حذف نتایجی که مقدار null دارند
+
     console.table(results);
   };
-  
-  
-  
-  
+
   const handleCalculateResults = () => {
     calculateResults();
   };
 
-  const handleAnswerChange = (questionId: number, userAnswer: string) => {
-    // بررسی اگر جواب برای این سوال قبلاً ثبت شده باشد
-    const existingAnswerIndex = userAnswers.findIndex(
-      (answer) => answer.id === questionId
-    );
-    if (existingAnswerIndex !== -1) {
-      const updatedAnswers = [...userAnswers];
-      updatedAnswers[existingAnswerIndex] = {
-        ...updatedAnswers[existingAnswerIndex], // کپی کردن اطلاعات موجود
-        userAnswer: [
-          ...updatedAnswers[existingAnswerIndex].userAnswer,
-          userAnswer,
-        ], // اضافه کردن جواب جدید
-      };
-      dispatch(setSelectedAnswers(updatedAnswers));
-    } else {
-      // اگر جواب برای این سوال وجود نداشته باشد، آن را به لیست اضافه کنید
-      dispatch(
-        setSelectedAnswers([
-          ...userAnswers,
-          { id: questionId, userAnswer: [userAnswer] },
-        ])
-      );
-    }
-  };
+  const handleAnswerChange = (
+    questionId: number,
+    userAnswer: string,
+    checked: boolean,
+    type: string
+  ) => {
+    const selectedQuestionAnswers = userAnswers.find((answer) => answer.id === questionId) || { id: questionId, userAnswer: [] };
+    const updatedAnswers = checked
+      ? type === "radio"
+        ? [userAnswer]
+        : [...selectedQuestionAnswers.userAnswer, userAnswer]
+      : selectedQuestionAnswers.userAnswer.filter((answer) => answer !== userAnswer);
 
-  console.log(userAnswers);
+    setUserAnswers((prevUserAnswers) => {
+      const updatedUserAnswers = [...prevUserAnswers];
+      const existingAnswerIndex = updatedUserAnswers.findIndex((answer) => answer.id === questionId);
+      if (existingAnswerIndex !== -1) {
+        updatedUserAnswers[existingAnswerIndex] = {
+          ...updatedUserAnswers[existingAnswerIndex],
+          userAnswer: updatedAnswers,
+        };
+      } else {
+        updatedUserAnswers.push({ id: questionId, userAnswer: updatedAnswers });
+      }
+      return updatedUserAnswers;
+    });
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -109,21 +103,27 @@ const Questions = () => {
               <h3 className="text-lg pt-4 font-Viga lg:text-2xl">
                 {index + 1 + "-"} {question.question}
               </h3>
-              <h5 className="text-xs text-GRAY600">{question.score}points</h5>
+              <h5 className="text-xs text-GRAY600">{question.score} points</h5>
             </div>
             <div className="question ">
-              {question.choices.split(",").map((choice, index) => (
+              {question.choices.split(",").map((choice, choiceIndex) => (
                 <div
                   className="flex items-center gap-2 mb-2 text-xl"
-                  key={index}
+                  key={choiceIndex}
                 >
                   <input
                     className="w-5 h-5"
-                    type={question.type === "trueFalse" ? "radio" : "checkbox"}
+                    type={getType(question.type)}
                     name={`question-${question.id}`}
                     id={`question-${choice}`}
                     value={choice}
-                    onChange={() => handleAnswerChange(question.id, choice)}
+                    onChange={(e) =>
+                      handleAnswerChange(
+                        question.id,
+                        e.target.value,
+                        e.target.checked,
+                        getType(question.type)
+                      )}
                   />
                   <p>{choice}</p>
                 </div>
