@@ -1,6 +1,3 @@
-
-
-
 import { useSelector } from "react-redux";
 import { selectAllQuestions } from "../reducers/quiz/QuizReducer";
 import AlertDelete from "./AlertDelete";
@@ -9,57 +6,72 @@ import { useState } from "react";
 
 const Questions = () => {
   const questions = useSelector(selectAllQuestions);
-  const [userAnswers, setUserAnswers] = useState<{ id: number; userAnswer: string[] }[]>([]);
+  const [userAnswers, setUserAnswers] = useState<
+    { id: number; userAnswer: string[] }[]
+  >([]);
 
   const getQuestionType = (answer: string) => {
     return answer === "trueFalse" ? "radio" : "checkbox";
   };
 
   const calculateResults = () => {
-    const results = questions.map((question) => {
-      const userAnswer = userAnswers.find((answer) => answer.id === question.id) || {
-        id: question.id,
-        userAnswer: [],
-      };
-
-      if (!userAnswer) {
-        return {
+    const results = questions
+      .map((question) => {
+        const userAnswer = userAnswers.find(
+          (answer) => answer.id === question.id
+        ) || {
           id: question.id,
-          question: question.question,
-          userAnswer: "No answer provided",
-          isCorrect: false,
-          score: question.score,
-          choices: question.choices,
+          userAnswer: [],
         };
-      }
 
-      if (question.type === "trueFalse" || question.type === "singlecorrect_answers") {
-        // اگر نوع سوال trueFalse یا singlecorrect_answers باشد
-        const isCorrect = userAnswer.userAnswer[0] === question.correct_answers && userAnswer.userAnswer.length === 1;
-        return {
-          id: question.id,
-          question: question.question,
-          userAnswer: userAnswer.userAnswer[0],
-          isCorrect,
-        };
-      } else if (question.type === "multiplecorrect_answers") {
-        const correctAnswers = question.correct_answers.split(",");
-        const userSelectedAnswers = [...new Set(userAnswer.userAnswer)].sort();
-        const isCorrect =
-          correctAnswers.length === userSelectedAnswers.length &&
-          correctAnswers.every((correctAnswer) => userSelectedAnswers.includes(correctAnswer));
+        if (!userAnswer) {
+          return {
+            id: question.id,
+            question: question.question,
+            userAnswer: "No answer provided",
+            isCorrect: false,
+            score: question.score,
+            choices: question.choices,
+          };
+        }
 
-        return {
-          id: question.id,
-          question: question.question,
-          userAnswer: userSelectedAnswers.join(", "),
-          isCorrect,
-          score: question.score,
-          choices: question.choices,
-        };
-      }
-      return null;
-    }).filter((result) => result !== null);
+        if (
+          question.type === "trueFalse" ||
+          question.type === "singlecorrect_answers"
+        ) {
+          // اگر نوع سوال trueFalse یا singlecorrect_answers باشد
+          const isCorrect =
+            userAnswer.userAnswer[0] === question.correct_answers &&
+            userAnswer.userAnswer.length === 1;
+          return {
+            id: question.id,
+            question: question.question,
+            userAnswer: userAnswer.userAnswer[0],
+            isCorrect,
+          };
+        } else if (question.type === "multiplecorrect_answers") {
+          const correctAnswers = question.correct_answers.split(",");
+          const userSelectedAnswers = [
+            ...new Set(userAnswer.userAnswer),
+          ].sort();
+          const isCorrect =
+            correctAnswers.length === userSelectedAnswers.length &&
+            correctAnswers.every((correctAnswer) =>
+              userSelectedAnswers.includes(correctAnswer)
+            );
+
+          return {
+            id: question.id,
+            question: question.question,
+            userAnswer: userSelectedAnswers.join(", "),
+            isCorrect,
+            score: question.score,
+            choices: question.choices,
+          };
+        }
+        return null;
+      })
+      .filter((result) => result !== null);
 
     console.table(results);
   };
@@ -74,7 +86,9 @@ const Questions = () => {
     checked: boolean,
     type: string
   ) => {
-    const selectedQuestionAnswers = userAnswers.find((answer) => answer.id === questionId) || {
+    const selectedQuestionAnswers = userAnswers.find(
+      (answer) => answer.id === questionId
+    ) || {
       id: questionId,
       userAnswer: [],
     };
@@ -83,10 +97,14 @@ const Questions = () => {
       ? type === "radio"
         ? [userAnswer]
         : [...selectedQuestionAnswers.userAnswer, userAnswer]
-      : selectedQuestionAnswers.userAnswer.filter((answer) => answer !== userAnswer);
+      : selectedQuestionAnswers.userAnswer.filter(
+          (answer) => answer !== userAnswer
+        );
 
     setUserAnswers((prevUserAnswers) => {
-      const existingAnswerIndex = prevUserAnswers.findIndex((answer) => answer.id === questionId);
+      const existingAnswerIndex = prevUserAnswers.findIndex(
+        (answer) => answer.id === questionId
+      );
       if (existingAnswerIndex !== -1) {
         prevUserAnswers[existingAnswerIndex] = {
           ...prevUserAnswers[existingAnswerIndex],
@@ -115,7 +133,10 @@ const Questions = () => {
           />
         ))}
         <div className="flex justify-between items-center">
-          <button className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK" onClick={handleCalculateResults}>
+          <button
+            className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK"
+            onClick={handleCalculateResults}
+          >
             Submit
           </button>
           <div>
@@ -127,11 +148,14 @@ const Questions = () => {
   );
 };
 
-const QuestionCard = ({ question, index, handleAnswerChange, getQuestionType }) => {
+const QuestionCard = ({
+  question,
+  index,
+  handleAnswerChange,
+  getQuestionType,
+}) => {
   return (
-    <div
-      className="  bg-FOREGROUND px-8 py-6 rounded-lg shadow-lg shadow-BACKGROUND_DARK "
-    >
+    <div className="  bg-FOREGROUND px-8 py-6 rounded-lg shadow-lg shadow-BACKGROUND_DARK ">
       <div className="flex justify-between mb-3 lg:items-center lg:pt-0">
         <h3 className="text-lg pt-4 font-Viga lg:text-2xl">
           {index + 1 + "-"} {question.question}
@@ -156,7 +180,8 @@ const QuestionCard = ({ question, index, handleAnswerChange, getQuestionType }) 
                   e.target.value,
                   e.target.checked,
                   getQuestionType(question.type)
-                )}
+                )
+              }
             />
             <p>{choice}</p>
           </div>
