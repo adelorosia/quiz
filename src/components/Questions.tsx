@@ -1,3 +1,6 @@
+
+
+
 import { useSelector } from "react-redux";
 import { selectAllQuestions } from "../reducers/quiz/QuizReducer";
 import AlertDelete from "./AlertDelete";
@@ -25,6 +28,8 @@ const Questions = () => {
           question: question.question,
           userAnswer: "No answer provided",
           isCorrect: false,
+          score: question.score,
+          choices: question.choices,
         };
       }
 
@@ -49,6 +54,8 @@ const Questions = () => {
           question: question.question,
           userAnswer: userSelectedAnswers.join(", "),
           isCorrect,
+          score: question.score,
+          choices: question.choices,
         };
       }
       return null;
@@ -91,7 +98,7 @@ const Questions = () => {
       return [...prevUserAnswers];
     });
   };
-console.log(userAnswers)
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex bg-BLUE700/90 py-4 px-12 justify-between shadow-lg shadow-BACKGROUND_DARK font-Viga md:text-2xl fixed w-full right-0 rounded-b-full">
@@ -99,41 +106,13 @@ console.log(userAnswers)
       </div>
       <div className="wrapper my-24 flex flex-col gap-6 select-none">
         {questions.map((question, index) => (
-          <div
-            className="  bg-FOREGROUND px-8 py-6 rounded-lg shadow-lg shadow-BACKGROUND_DARK "
+          <QuestionCard
             key={index}
-          >
-            <div className="flex justify-between mb-3 lg:items-center lg:pt-0">
-              <h3 className="text-lg pt-4 font-Viga lg:text-2xl">
-                {index + 1 + "-"} {question.question}
-              </h3>
-              <h5 className="text-xs text-GRAY600">{question.score} points</h5>
-            </div>
-            <div className="question ">
-              {question.choices.split(",").map((choice, choiceIndex) => (
-                <div
-                  className="flex items-center gap-2 mb-2 text-xl"
-                  key={choiceIndex}
-                >
-                  <input
-                    className="w-5 h-5"
-                    type={getQuestionType(question.type)}
-                    name={`question-${question.id}`}
-                    id={`question-${choice}`}
-                    value={choice}
-                    onChange={(e) =>
-                      handleAnswerChange(
-                        question.id,
-                        e.target.value,
-                        e.target.checked,
-                        getQuestionType(question.type)
-                      )}
-                  />
-                  <p>{choice}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+            question={question}
+            index={index}
+            handleAnswerChange={handleAnswerChange}
+            getQuestionType={getQuestionType}
+          />
         ))}
         <div className="flex justify-between items-center">
           <button className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK" onClick={handleCalculateResults}>
@@ -143,6 +122,45 @@ console.log(userAnswers)
             <AlertDelete />
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const QuestionCard = ({ question, index, handleAnswerChange, getQuestionType }) => {
+  return (
+    <div
+      className="  bg-FOREGROUND px-8 py-6 rounded-lg shadow-lg shadow-BACKGROUND_DARK "
+    >
+      <div className="flex justify-between mb-3 lg:items-center lg:pt-0">
+        <h3 className="text-lg pt-4 font-Viga lg:text-2xl">
+          {index + 1 + "-"} {question.question}
+        </h3>
+        <h5 className="text-xs text-GRAY600">{question.score} points</h5>
+      </div>
+      <div className="question ">
+        {question.choices.split(",").map((choice, choiceIndex) => (
+          <div
+            className="flex items-center gap-2 mb-2 text-xl"
+            key={choiceIndex}
+          >
+            <input
+              className="w-5 h-5"
+              type={getQuestionType(question.type)}
+              name={`question-${question.id}`}
+              id={`question-${choice}`}
+              value={choice}
+              onChange={(e) =>
+                handleAnswerChange(
+                  question.id,
+                  e.target.value,
+                  e.target.checked,
+                  getQuestionType(question.type)
+                )}
+            />
+            <p>{choice}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
