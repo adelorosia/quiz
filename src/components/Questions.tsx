@@ -1,23 +1,23 @@
 import { useSelector } from "react-redux";
-import {
-  selectAllQuestions,
-} from "../reducers/quiz/QuizReducer";
+import { selectAllQuestions } from "../reducers/quiz/QuizReducer";
 import AlertDelete from "./AlertDelete";
 import UsersInfo from "./UsersInfo";
 import { useState } from "react";
 
 const Questions = () => {
   const questions = useSelector(selectAllQuestions);
-
   const [userAnswers, setUserAnswers] = useState<{ id: number; userAnswer: string[] }[]>([]);
 
-  const getType = (answer: string) => {
+  const getQuestionType = (answer: string) => {
     return answer === "trueFalse" ? "radio" : "checkbox";
   };
 
   const calculateResults = () => {
     const results = questions.map((question) => {
-      const userAnswer = userAnswers.find((answer) => answer.id === question.id);
+      const userAnswer = userAnswers.find((answer) => answer.id === question.id) || {
+        id: question.id,
+        userAnswer: [],
+      };
 
       if (!userAnswer) {
         return {
@@ -50,8 +50,8 @@ const Questions = () => {
           isCorrect,
         };
       }
-      return null; // اضافه کردن این خط به عنوان بخشی از بهبود کد
-    }).filter(result => result !== null); // حذف نتایجی که مقدار null دارند
+      return null;
+    }).filter((result) => result !== null);
 
     console.table(results);
   };
@@ -66,7 +66,11 @@ const Questions = () => {
     checked: boolean,
     type: string
   ) => {
-    const selectedQuestionAnswers = userAnswers.find((answer) => answer.id === questionId) || { id: questionId, userAnswer: [] };
+    const selectedQuestionAnswers = userAnswers.find((answer) => answer.id === questionId) || {
+      id: questionId,
+      userAnswer: [],
+    };
+
     const updatedAnswers = checked
       ? type === "radio"
         ? [userAnswer]
@@ -74,17 +78,16 @@ const Questions = () => {
       : selectedQuestionAnswers.userAnswer.filter((answer) => answer !== userAnswer);
 
     setUserAnswers((prevUserAnswers) => {
-      const updatedUserAnswers = [...prevUserAnswers];
-      const existingAnswerIndex = updatedUserAnswers.findIndex((answer) => answer.id === questionId);
+      const existingAnswerIndex = prevUserAnswers.findIndex((answer) => answer.id === questionId);
       if (existingAnswerIndex !== -1) {
-        updatedUserAnswers[existingAnswerIndex] = {
-          ...updatedUserAnswers[existingAnswerIndex],
+        prevUserAnswers[existingAnswerIndex] = {
+          ...prevUserAnswers[existingAnswerIndex],
           userAnswer: updatedAnswers,
         };
       } else {
-        updatedUserAnswers.push({ id: questionId, userAnswer: updatedAnswers });
+        prevUserAnswers.push({ id: questionId, userAnswer: updatedAnswers });
       }
-      return updatedUserAnswers;
+      return [...prevUserAnswers];
     });
   };
 
@@ -113,7 +116,7 @@ const Questions = () => {
                 >
                   <input
                     className="w-5 h-5"
-                    type={getType(question.type)}
+                    type={getQuestionType(question.type)}
                     name={`question-${question.id}`}
                     id={`question-${choice}`}
                     value={choice}
@@ -122,7 +125,7 @@ const Questions = () => {
                         question.id,
                         e.target.value,
                         e.target.checked,
-                        getType(question.type)
+                        getQuestionType(question.type)
                       )}
                   />
                   <p>{choice}</p>

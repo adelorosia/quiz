@@ -37,18 +37,6 @@ const AlertDelete = () => {
           </div>
         );
       },
-      // title: 'Confirm to clear',
-      // message: 'Are you sure to do this.',
-      // buttons: [
-      //   {
-      //     label: 'Yes',
-      //     onClick: clearForm
-      //   },
-      //   {
-      //     label: 'No',
-      //     onClick: () => {return}
-      //   }
-      // ]
     });
   };
   return (
