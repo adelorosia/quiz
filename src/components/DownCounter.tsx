@@ -53,7 +53,7 @@ const DownCounter = () => {
   }, [isTimerStart]);
 
   return (
-    <div className="font-Viga text-sm md:text-xl py-2 text-FOREGROUND bg-GREEN500 px-4 rounded-lg ">{`${hours.toString().padStart(2, "0")} : ${minutes
+    <div className={`font-Viga text-sm md:text-xl py-2 text-FOREGROUND  px-4 rounded-lg ${hours===0 && minutes===0 && seconds<60?"bg-RED600 animate-bounce":"bg-GREEN500"}`}>{`${hours.toString().padStart(2, "0")} : ${minutes
       .toString()
       .padStart(2, "0")} : ${seconds.toString().padStart(2, "0")}`}</div>
   );

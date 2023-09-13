@@ -1,8 +1,8 @@
 export interface IQuestions {
   id: number;
+  type:string
   question: string;
-  answers: string[];
-  correct_answer: string[];
+  choices: string;
   score: number;
 }
 

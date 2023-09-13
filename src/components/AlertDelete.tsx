@@ -10,31 +10,31 @@ const AlertDelete = () => {
     confirmAlert({
       customUI: ({ onClose }) => {
         return (
-         <div className=" w-full flex flex-col gap-5 font-Viga ">
-           <div className="flex flex-col bg-BACKGROUND_DARK p-5 rounded-lg gap-3">
-            <h1 className=" text-RED300">Confirm to clear</h1>
-            <p className=" text-FOREGROUND">Are you sure to do this.</p>
-           <div className="flex justify-between items-center">
-           <button 
-           className="px-5 py-2 bg-RED600 text-white rounded-xl"
-              onClick={() => {
-                clearForm();
-            onClose()
-              }}
-            >
-              Yes
-            </button>
-            <button
-             className="px-5 py-2 bg-GREEN500 text-white rounded-xl"
-              onClick={() => {
-             return
-              }}
-            >
-              Cancle
-            </button>
-           </div>
+          <div className=" w-full flex flex-col gap-5 font-Viga ">
+            <div className="flex flex-col bg-BACKGROUND_DARK p-5 rounded-lg gap-3">
+              <h1 className=" text-RED300">Confirm to clear</h1>
+              <p className=" text-FOREGROUND">Are you sure to do this.</p>
+              <div className="flex justify-between items-center">
+                <button
+                  className="px-5 py-2 bg-RED600 text-white rounded-xl"
+                  onClick={() => {
+                    clearForm();
+                    onClose();
+                  }}
+                >
+                  Yes
+                </button>
+                <button
+                  className="px-5 py-2 bg-GREEN500 text-white rounded-xl"
+                  onClick={() => {
+                    onClose();
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
-         </div>
         );
       },
       // title: 'Confirm to clear',
