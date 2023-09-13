@@ -1,31 +1,98 @@
-import { useSelector } from "react-redux";
-import { selectAllQuestions } from "../reducers/quiz/QuizReducer";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectAllQuestions,
+  setSelectedAnswers,
+} from "../reducers/quiz/QuizReducer";
 import AlertDelete from "./AlertDelete";
 import UsersInfo from "./UsersInfo";
-import { useState } from "react";
+import { RootState } from "../store";
 
 const Questions = () => {
+  const dispatch = useDispatch();
   const questions = useSelector(selectAllQuestions);
-  const [userAnswers, setUserAnswers] = useState<{ [questionId: number]: string[] }>({});
+  const userAnswers = useSelector(
+    (state: RootState) => state.questions.selectedAnswers
+  );
 
-  const handleAnswerChange = (questionId: number, selectedAnswer: string) => {
-    const updatedUserAnswers = { ...userAnswers };
 
-    if (updatedUserAnswers[questionId]) {
-      if (updatedUserAnswers[questionId].includes(selectedAnswer)) {
-        updatedUserAnswers[questionId] = updatedUserAnswers[questionId].filter(
-          (answer) => answer !== selectedAnswer
-        );
-      } else {
-        updatedUserAnswers[questionId].push(selectedAnswer);
+
+  const calculateResults = () => {
+    // محاسبه نتایج
+    const results = questions.map((question) => {
+      const userAnswer = userAnswers.find((answer) => answer.id === question.id);
+  
+      if (!userAnswer) {
+        return {
+          id: question.id,
+          question: question.question,
+          userAnswer: "No answer provided",
+          isCorrect: false,
+        };
       }
-    } else {
-      updatedUserAnswers[questionId] = [selectedAnswer];
-    }
-
-    setUserAnswers(updatedUserAnswers);
+  
+      if (question.type === "trueFalse" || question.type === "singlecorrect_answers") {
+        // اگر نوع سوال trueFalse یا singlecorrect_answers باشد
+        const isCorrect = userAnswer.userAnswer[0] === question.correct_answers;
+        return {
+          id: question.id,
+          question: question.question,
+          userAnswer: userAnswer.userAnswer[0],
+          isCorrect,
+        };
+      } else if (question.type === "multiplecorrect_answers") {
+        // اگر نوع سوال multiplecorrect_answers باشد
+        const correctAnswers = question.correct_answers.split(",");
+        const userSelectedAnswers = [...new Set(userAnswer.userAnswer)].sort(); // حذف تکرارها
+        const isCorrect = correctAnswers.every((correctAnswer) =>
+          userSelectedAnswers.includes(correctAnswer)
+        );
+        return {
+          id: question.id,
+          question: question.question,
+          userAnswer: userSelectedAnswers.join(", "),
+          isCorrect,
+        };
+      }
+    });
+  
+    // نمایش نتایج در کنسول به صورت جدول
+    console.table(results);
   };
-console.log(userAnswers)
+  
+  
+  
+  
+  const handleCalculateResults = () => {
+    calculateResults();
+  };
+
+  const handleAnswerChange = (questionId: number, userAnswer: string) => {
+    // بررسی اگر جواب برای این سوال قبلاً ثبت شده باشد
+    const existingAnswerIndex = userAnswers.findIndex(
+      (answer) => answer.id === questionId
+    );
+    if (existingAnswerIndex !== -1) {
+      const updatedAnswers = [...userAnswers];
+      updatedAnswers[existingAnswerIndex] = {
+        ...updatedAnswers[existingAnswerIndex], // کپی کردن اطلاعات موجود
+        userAnswer: [
+          ...updatedAnswers[existingAnswerIndex].userAnswer,
+          userAnswer,
+        ], // اضافه کردن جواب جدید
+      };
+      dispatch(setSelectedAnswers(updatedAnswers));
+    } else {
+      // اگر جواب برای این سوال وجود نداشته باشد، آن را به لیست اضافه کنید
+      dispatch(
+        setSelectedAnswers([
+          ...userAnswers,
+          { id: questionId, userAnswer: [userAnswer] },
+        ])
+      );
+    }
+  };
+
+  console.log(userAnswers);
 
   return (
     <div className="flex flex-col gap-8">
@@ -40,7 +107,7 @@ console.log(userAnswers)
           >
             <div className="flex justify-between mb-3 lg:items-center lg:pt-0">
               <h3 className="text-lg pt-4 font-Viga lg:text-2xl">
-               {index + 1 + "-"} {question.question}
+                {index + 1 + "-"} {question.question}
               </h3>
               <h5 className="text-xs text-GRAY600">{question.score}points</h5>
             </div>
@@ -56,17 +123,16 @@ console.log(userAnswers)
                     name={`question-${question.id}`}
                     id={`question-${choice}`}
                     value={choice}
-                    checked={userAnswers[question.id]?.includes(choice) || false}
                     onChange={() => handleAnswerChange(question.id, choice)}
                   />
-                  <p>{choice.split("*")}</p>
+                  <p>{choice}</p>
                 </div>
               ))}
             </div>
           </div>
         ))}
         <div className="flex justify-between items-center">
-          <button className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK">
+          <button className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK" onClick={handleCalculateResults}>
             Submit
           </button>
           <div>
