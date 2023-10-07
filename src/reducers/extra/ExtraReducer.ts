@@ -4,7 +4,7 @@ import { getAllExtraInfo } from "../../services";
 import { RootState } from "../../store";
 
 interface IExtra {
-  extraInfo: IExtraInfo;
+  extraInfo: IExtraInfo[];
   status: "idle" | "loading" | "completed" | "failed";
   error: string | null;
 }
@@ -18,7 +18,7 @@ export const fetchExtraInfo = createAsyncThunk(
 );
 
 const initialState: IExtra = {
-  extraInfo: { time: 0, totalQuestion: 0 },
+  extraInfo: [],
   status: "idle",
   error: null,
 };

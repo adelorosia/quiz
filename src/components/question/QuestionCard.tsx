@@ -4,7 +4,7 @@ interface IQuestionCardProps {
   question: IQuestions;
   index: number;
   handleAnswerChange: (
-    questionId: number,
+    questionId: string,
     userAnswer: string,
     checked: boolean,
     type: string
@@ -35,12 +35,12 @@ const QuestionCard = ({
             <input
               className="w-5 h-5"
               type={getQuestionType(question.type)}
-              name={`question-${question.id}`}
+              name={`question-${question._id}`}
               id={`question-${choice}`}
               value={choice}
               onChange={(e) =>
                 handleAnswerChange(
-                  question.id,
+                  question._id,
                   e.target.value,
                   e.target.checked,
                   getQuestionType(question.type)

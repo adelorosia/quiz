@@ -8,7 +8,7 @@ import QuestionCard from "./QuestionCard";
 const Questions = () => {
   const questions = useSelector(selectAllQuestions);
   const [userAnswers, setUserAnswers] = useState<
-    { id: number; userAnswer: string[] }[]
+    { id: string; userAnswer: string[] }[]
   >([]);
 
   const getQuestionType = (answer: string) => {
@@ -19,15 +19,15 @@ const Questions = () => {
     const results = questions
       .map((question) => {
         const userAnswer = userAnswers.find(
-          (answer) => answer.id === question.id
+          (answer) => answer.id === question._id
         ) || {
-          id: question.id,
+          id: question._id,
           userAnswer: [],
         };
 
         if (!userAnswer) {
           return {
-            id: question.id,
+            id: question._id,
             question: question.question,
             userAnswer: "No answer provided",
             isCorrect: false,
@@ -44,7 +44,7 @@ const Questions = () => {
             userAnswer.userAnswer[0] === question.correct_answers &&
             userAnswer.userAnswer.length === 1;
           return {
-            id: question.id,
+            id: question._id,
             question: question.question,
             userAnswer: userAnswer.userAnswer[0],
             isCorrect,
@@ -61,7 +61,7 @@ const Questions = () => {
             );
 
           return {
-            id: question.id,
+            id: question._id,
             question: question.question,
             userAnswer: userSelectedAnswers.join(", "),
             isCorrect,
@@ -81,7 +81,7 @@ const Questions = () => {
   };
 
   const handleAnswerChange = (
-    questionId: number,
+    questionId: string,
     userAnswer: string,
     checked: boolean,
     type: string
