@@ -1,4 +1,4 @@
-import Questions from "../components/Questions"
+import Questions from "../components/question/Questions"
 
 const QuestionPage = () => {
   return (
