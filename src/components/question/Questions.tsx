@@ -1,11 +1,19 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectAllQuestions } from "../../reducers/quiz/QuizReducer";
 import AlertDelete from "../AlertDelete";
 import UsersInfo from "../UsersInfo";
 import { useState } from "react";
 import QuestionCard from "./QuestionCard";
+import { AppDispatch, RootState } from "../../store";
+import { addNewUser } from "../../reducers/users/userReducer";
+import { useNavigate } from "react-router-dom";
+import { nanoid } from "@reduxjs/toolkit";
 
 const Questions = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const email = useSelector((state: RootState) => state.questions.email);
+  const fullName = useSelector((state: RootState) => state.questions.fullName);
   const questions = useSelector(selectAllQuestions);
   const [userAnswers, setUserAnswers] = useState<
     { id: string; userAnswer: string[] }[]
@@ -15,69 +23,86 @@ const Questions = () => {
     return answer === "trueFalse" ? "radio" : "checkbox";
   };
 
-  const calculateResults = () => {
-    const results = questions
-      .map((question) => {
-        const userAnswer = userAnswers.find(
-          (answer) => answer.id === question._id
-        ) || {
+  const calculateResults = async () => {
+    const results = questions.map((question) => {
+      const userAnswer = userAnswers.find(
+        (answer) => answer.id === question._id
+      ) || {
+        id: question._id,
+        userAnswer: [],
+      };
+
+      if (!userAnswer) {
+        return {
           id: question._id,
-          userAnswer: [],
+          question: question.question,
+          userAnswer: "No answer provided",
+          isCorrect: false,
+          score: question.score,
+          choices: question.choices,
         };
+      }
 
-        if (!userAnswer) {
-          return {
-            id: question._id,
-            question: question.question,
-            userAnswer: "No answer provided",
-            isCorrect: false,
-            score: question.score,
-            choices: question.choices,
-          };
-        }
+      if (
+        question.type === "trueFalse" ||
+        question.type === "singlecorrect_answers"
+      ) {
+        const isCorrect =
+          userAnswer.userAnswer[0] === question.correct_answers &&
+          userAnswer.userAnswer.length === 1;
+        return {
+          id: question._id,
+          question: question.question,
+          userAnswer: userAnswer.userAnswer[0],
+          isCorrect,
+          score: isCorrect ? question.score : 0,
+        };
+      } else if (question.type === "multiplecorrect_answers") {
+        const correctAnswers = question.correct_answers.split(",");
+        const userSelectedAnswers = [...new Set(userAnswer.userAnswer)].sort();
+        const isCorrect =
+          correctAnswers.length === userSelectedAnswers.length &&
+          correctAnswers.every((correctAnswer) =>
+            userSelectedAnswers.includes(correctAnswer)
+          );
 
-        if (
-          question.type === "trueFalse" ||
-          question.type === "singlecorrect_answers"
-        ) {
-          const isCorrect =
-            userAnswer.userAnswer[0] === question.correct_answers &&
-            userAnswer.userAnswer.length === 1;
-          return {
-            id: question._id,
-            question: question.question,
-            userAnswer: userAnswer.userAnswer[0],
-            isCorrect,
-          };
-        } else if (question.type === "multiplecorrect_answers") {
-          const correctAnswers = question.correct_answers.split(",");
-          const userSelectedAnswers = [
-            ...new Set(userAnswer.userAnswer),
-          ].sort();
-          const isCorrect =
-            correctAnswers.length === userSelectedAnswers.length &&
-            correctAnswers.every((correctAnswer) =>
-              userSelectedAnswers.includes(correctAnswer)
-            );
-
-          return {
-            id: question._id,
-            question: question.question,
-            userAnswer: userSelectedAnswers.join(", "),
-            isCorrect,
-            score: question.score,
-            choices: question.choices,
-          };
-        }
-        return null;
-      })
-      .filter((result) => result !== null);
+        return {
+          id: question._id,
+          question: question.question,
+          userAnswer: userSelectedAnswers.join(", "),
+          isCorrect,
+          score: isCorrect ? question.score : 0,
+          choices: question.choices,
+        };
+      }
+      return null;
+    });
 
     console.table(results);
-  };
 
-  const handleCalculateResults = () => {
-    calculateResults();
+    const correctAnswers = results.filter((result) => result!.isCorrect);
+    const incorrectAnswers = results.filter((result) => !result!.isCorrect);
+
+    const total = results.reduce((acc, result) => acc + result!.score, 0);
+   const spezialId= nanoid();
+    try {
+      // انتظار برای به‌روزرسانی مقادیر
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await dispatch(
+        addNewUser({
+          _id: "",
+          _userSpzialId: spezialId,
+          fullName: fullName,
+          email: email,
+          correctAnswers: correctAnswers.length,
+          IncorrectAnswers: incorrectAnswers.length,
+          totalScore: total,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to save the blog", error);
+    }
+    navigate(`/result/${spezialId}`);
   };
 
   const handleAnswerChange = (
@@ -113,8 +138,13 @@ const Questions = () => {
       } else {
         prevUserAnswers.push({ id: questionId, userAnswer: updatedAnswers });
       }
+
       return [...prevUserAnswers];
     });
+  };
+
+  const handleCalculateResults = () => {
+    calculateResults();
   };
 
   return (
@@ -147,4 +177,5 @@ const Questions = () => {
     </div>
   );
 };
+
 export default Questions;

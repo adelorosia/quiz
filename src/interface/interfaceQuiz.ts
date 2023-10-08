@@ -7,13 +7,14 @@ export interface IQuestions {
   score: number;
 }
 
-export interface IUsers{
-  _id:number;
-  fullName:string;
-  email:string;
-  correctAnswers:string;
-  IncorrectAnswers:string;
-  totalScore:string
+export interface IUsers {
+  _id: string;
+  _userSpzialId: string;
+  fullName: string;
+  email: string;
+  correctAnswers: number;
+  IncorrectAnswers: number;
+  totalScore: number;
 }
 
 export interface IExtraInfo {
@@ -25,4 +26,3 @@ export interface ISelectedAnswers {
   id: string;
   userAnswer: string[];
 }
-

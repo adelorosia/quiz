@@ -23,6 +23,11 @@ export const getUser = (_id:string) => {
   return axios.get(url);
 };
 
+export const getUserSpezialId = (_userSpzialId:string) => {
+  const url = `${SERVER_URL}/api/users/display/${_userSpzialId}`;
+  return axios.get(url);
+};
+
 export const createUser = (user: IUsers) => {
   const url = `${SERVER_URL}/api/users/create`;
   return axios.post(url, user);

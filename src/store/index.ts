@@ -13,5 +13,5 @@ store.dispatch(fetchQuiz())
 store.dispatch(fetchExtraInfo())
 store.dispatch(fetchUser())
 
-export type dispatch = typeof store.dispatch;
+export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

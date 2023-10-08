@@ -20,7 +20,7 @@ export const router = createBrowserRouter([
         element: <QuestionPage />,
       },
       {
-        path: "/result",
+        path: "/result/:_userSpzialId",
         element: <ResultPage />,
       },
     ],
