@@ -1,7 +1,7 @@
 import axios from "axios";
 import { IUsers } from "../interface/interfaceQuiz";
 
-const SERVER_URL = "http://localhost:3001";
+const SERVER_URL = "https://blog-api-j7gq.onrender.com";
 
 export const getAllQuestions = () => {
   const url = `${SERVER_URL}/api/questions/display`;
