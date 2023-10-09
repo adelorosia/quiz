@@ -167,42 +167,42 @@ const Questions = () => {
       case QuestionStatus.Loading:
         return <Spinner />;
       case QuestionStatus.Completed:
-        return questions.map((question, index) => (
-          <QuestionCard
-            key={index}
-            question={question}
-            index={index}
-            handleAnswerChange={handleAnswerChange}
-            getQuestionType={getQuestionType}
-          />
-        ));
+        return (
+          <div className="flex flex-col gap-8">
+            <div className="flex bg-BLUE700/90 py-4 px-12 justify-between shadow-lg shadow-BACKGROUND_DARK font-Viga md:text-2xl fixed w-full right-0 rounded-b-full">
+              <UsersInfo />
+            </div>
+            <div className="wrapper my-24 flex flex-col gap-6 select-none">
+              {questions.map((question, index) => (
+                <QuestionCard
+                  key={index}
+                  question={question}
+                  index={index}
+                  handleAnswerChange={handleAnswerChange}
+                  getQuestionType={getQuestionType}
+                />
+              ))}
+              <div className="flex justify-between items-center">
+                <button
+                  className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK"
+                  onClick={handleCalculateResults}
+                >
+                  Submit
+                </button>
+                <div>
+                  <AlertDelete />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case QuestionStatus.Failed:
         return <div>{error}</div>;
       default:
         return null;
     }
   };
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex bg-BLUE700/90 py-4 px-12 justify-between shadow-lg shadow-BACKGROUND_DARK font-Viga md:text-2xl fixed w-full right-0 rounded-b-full">
-        <UsersInfo />
-      </div>
-      <div className="wrapper my-24 flex flex-col gap-6 select-none">
-        {renderQuestion()}
-        <div className="flex justify-between items-center">
-          <button
-            className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK"
-            onClick={handleCalculateResults}
-          >
-            Submit
-          </button>
-          <div>
-            <AlertDelete />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return renderQuestion();
 };
 
 export default Questions;
