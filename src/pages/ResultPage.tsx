@@ -27,9 +27,9 @@ const ResultPage = () => {
 
   return (
     <div className="flex flex-col justify-center items-center h-screen">
-      <div className="bg-zinc-300 px-8 py-5 rounded-lg shadow-lg shadow-BACKGROUND_DARK w-2/3 font-Viga flex flex-col gap-4 text-lg">
+      <div className="bg-zinc-300 px-8 py-5 rounded-lg shadow-lg shadow-BACKGROUND_DARK w-full lg-w-1/3 font-Viga flex flex-col gap-4 text-lg">
  
-            <div className="flex justify-between text-2xl">
+            <div className="flex justify-between text-md lg:text-2xl">
               <h2>{user.fullName}</h2>
               <p>{user.email}</p>
             </div>
