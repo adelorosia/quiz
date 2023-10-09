@@ -37,7 +37,7 @@ const DownCounter = () => {
                   if (prevHours === 0) {
                     setIsTimerStart(false);
                     clearInterval(interval);
-                    // navigate("/result"); // این خط را حذف کنید
+                  
                     return 0;
                   }
                   return prevHours - 1;
@@ -53,7 +53,7 @@ const DownCounter = () => {
       }, 1000);
     }
 
-    // تابع setTimeout برای تأخیر فراخوانی navigate را اضافه کنید
+  
     if (!isTimerStart) {
       setTimeout(() => {
         navigate("/result");

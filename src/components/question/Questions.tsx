@@ -1,15 +1,27 @@
 import { useDispatch, useSelector } from "react-redux";
-import { selectAllQuestions } from "../../reducers/quiz/QuizReducer";
+import { fetchQuiz, selectAllQuestions } from "../../reducers/quiz/QuizReducer";
 import AlertDelete from "../AlertDelete";
 import UsersInfo from "../UsersInfo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
 import { AppDispatch, RootState } from "../../store";
 import { addNewUser } from "../../reducers/users/userReducer";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "@reduxjs/toolkit";
+import Spinner from "../Spinner";
+
+const QuestionStatus = {
+  Idle: "idle",
+  Loading: "loading",
+  Completed: "completed",
+  Failed: "failed",
+};
 
 const Questions = () => {
+  const questionStatus = useSelector(
+    (state: RootState) => state.questions.status
+  );
+  const error = useSelector((state: RootState) => state.questions.error);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const email = useSelector((state: RootState) => state.questions.email);
@@ -84,9 +96,8 @@ const Questions = () => {
     const incorrectAnswers = results.filter((result) => !result!.isCorrect);
 
     const total = results.reduce((acc, result) => acc + result!.score, 0);
-   const spezialId= nanoid();
+    const spezialId = nanoid();
     try {
-      // انتظار برای به‌روزرسانی مقادیر
       await new Promise((resolve) => setTimeout(resolve, 0));
       await dispatch(
         addNewUser({
@@ -146,14 +157,17 @@ const Questions = () => {
   const handleCalculateResults = () => {
     calculateResults();
   };
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex bg-BLUE700/90 py-4 px-12 justify-between shadow-lg shadow-BACKGROUND_DARK font-Viga md:text-2xl fixed w-full right-0 rounded-b-full">
-        <UsersInfo />
-      </div>
-      <div className="wrapper my-24 flex flex-col gap-6 select-none">
-        {questions.map((question, index) => (
+  useEffect(() => {
+    if (questionStatus === "idle") {
+      dispatch(fetchQuiz());
+    }
+  }, [questionStatus, dispatch]);
+  const renderQuestion = () => {
+    switch (questionStatus) {
+      case QuestionStatus.Loading:
+        return <Spinner />;
+      case QuestionStatus.Completed:
+        return questions.map((question, index) => (
           <QuestionCard
             key={index}
             question={question}
@@ -161,7 +175,20 @@ const Questions = () => {
             handleAnswerChange={handleAnswerChange}
             getQuestionType={getQuestionType}
           />
-        ))}
+        ));
+      case QuestionStatus.Failed:
+        return <div>{error}</div>;
+      default:
+        return null;
+    }
+  };
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex bg-BLUE700/90 py-4 px-12 justify-between shadow-lg shadow-BACKGROUND_DARK font-Viga md:text-2xl fixed w-full right-0 rounded-b-full">
+        <UsersInfo />
+      </div>
+      <div className="wrapper my-24 flex flex-col gap-6 select-none">
+        {renderQuestion()}
         <div className="flex justify-between items-center">
           <button
             className="bg-GREEN600 text-FOREGROUND hover:text-GREEN600 hover:bg-FOREGROUND  px-8 py-2 rounded-lg font-Viga duration-300 shadow-lg shadow-BACKGROUND_DARK"
